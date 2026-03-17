@@ -33,9 +33,9 @@ fi
 
 echo "Removing BoxWatch agent..."
 
-# Remove cron job
+# Remove cron job (more specific pattern to avoid removing unrelated entries)
 if command -v crontab &> /dev/null; then
-    (crontab -l 2>/dev/null | grep -v "boxwatch" || true) | crontab - 2>/dev/null || true
+    (crontab -l 2>/dev/null | grep -v "boxwatch/agent.sh" || true) | crontab - 2>/dev/null || true
     success "✓ Removed cron job"
 else
     echo "Crontab not found, skipping cron removal"
