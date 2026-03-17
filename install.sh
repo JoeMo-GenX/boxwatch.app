@@ -12,7 +12,7 @@ INSTALL_DIR="/opt/boxwatch"
 AGENT_URL="https://boxwatch.app/agent.sh"
 
 # Expected SHA256 checksum of agent.sh (update when agent.sh changes)
-EXPECTED_SHA256="8b29ba1711efe1c584758d8d5995afa252d643485c8481910c66704ab30a1347"
+EXPECTED_SHA256="03c3ab87bcd869a5cee4efcf0fe8803170e59ccb8f7a1d4638c91a0d8b7fa6fd"
 
 # Colors for output
 RED='\033[0;31m'
