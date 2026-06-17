@@ -54,6 +54,22 @@ if [ "$EUID" -ne 0 ]; then
     SUDO="sudo"
 fi
 
+# Install jq if not present (required for uptime monitoring)
+if ! command -v jq &> /dev/null; then
+    echo "Installing jq..."
+    if command -v apt-get &> /dev/null; then
+        $SUDO apt-get install -y curl jq >/dev/null 2>&1 || warn "Failed to install jq via apt-get"
+    elif command -v dnf &> /dev/null; then
+        $SUDO dnf install -y curl jq >/dev/null 2>&1 || warn "Failed to install jq via dnf"
+    elif command -v yum &> /dev/null; then
+        $SUDO yum install -y curl jq >/dev/null 2>&1 || warn "Failed to install jq via yum"
+    elif command -v brew &> /dev/null; then
+        brew install curl jq >/dev/null 2>&1 || warn "Failed to install jq via brew"
+    else
+        warn "Could not install jq: no supported package manager found. Uptime monitoring will be disabled."
+    fi
+fi
+
 # Check for required commands
 for cmd in curl crontab; do
     if ! command -v $cmd &> /dev/null; then
