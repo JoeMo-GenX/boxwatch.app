@@ -1,55 +1,54 @@
 name: Sync agent scripts from live server
 
-  # The live VPS at boxwatch.app is the source of truth for these scripts.
-  # This workflow mirrors them into the repo so GitHub never drifts out of sync.
-  # It runs on a schedule, and can also be triggered manually from the Actions tab.
+# The live VPS at boxwatch.app is the source of truth for these scripts.
+# This workflow mirrors them into the repo so GitHub never drifts out of sync.
+# It runs on a schedule, and can also be triggered manually from the Actions tab.
 
-  on:
-    schedule:
-      - cron: '17 */6 * * *'   # every 6 hours (offset minute to avoid the top-of-hour rush)
-    workflow_dispatch:          # manual "Run workflow" button
+on:
+  schedule:
+    - cron: '17 */6 * * *'   # every 6 hours (offset minute to avoid the top-of-hour rush)
+  workflow_dispatch:          # manual "Run workflow" button
 
-  permissions:
-    contents: write             # allow the job to commit synced files back to the repo
+permissions:
+  contents: write             # allow the job to commit synced files back to the repo
 
-  jobs:
-    sync:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Check out repo
-          uses: actions/checkout@v4
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
 
-        - name: Fetch live scripts from boxwatch.app
-          run: |
-            set -euo pipefail
-            for f in install.sh uninstall.sh agent.sh; do
-              echo "Fetching $f..."
-              curl -fsSL "https://boxwatch.app/$f" -o "$f"
-            done
+      - name: Fetch live scripts from boxwatch.app
+        run: |
+          set -euo pipefail
+          for f in install.sh uninstall.sh agent.sh; do
+            echo "Fetching $f..."
+            curl -fsSL "https://boxwatch.app/$f" -o "$f"
+          done
 
-        - name: Verify installer checksum matches the live agent
-          run: |
-            set -euo pipefail
-            EXPECTED=$(grep -oE 'EXPECTED_SHA256="[a-f0-9]+"' install.sh | cut -d'"' -f2)
-            ACTUAL=$(sha256sum agent.sh | cut -d' ' -f1)
-            echo "install.sh expects: $EXPECTED"
-            echo "agent.sh hashes to: $ACTUAL"
-            if [ "$EXPECTED" != "$ACTUAL" ]; then
-              echo "::error::The live server is serving an inconsistent installer. install.sh expects $EXPECTED but agent.sh hashes to $ACTUAL. New installs will
-  fail their checksum check. Fix EXPECTED_SHA256 on the server."
-              exit 1
-            fi
+      - name: Verify installer checksum matches the live agent
+        run: |
+          set -euo pipefail
+          EXPECTED=$(grep -oE 'EXPECTED_SHA256="[a-f0-9]+"' install.sh | cut -d'"' -f2)
+          ACTUAL=$(sha256sum agent.sh | cut -d' ' -f1)
+          echo "install.sh expects: $EXPECTED"
+          echo "agent.sh hashes to: $ACTUAL"
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::The live server is serving an inconsistent installer. install.sh expects $EXPECTED but agent.sh hashes to $ACTUAL. New installs will fail their checksum check. Fix EXPECTED_SHA256 on the server."
+            exit 1
+          fi
 
-        - name: Commit and push if anything changed
-          run: |
-            set -euo pipefail
-            git config user.name "boxwatch-sync[bot]"
-            git config user.email "watcher@boxwatch.app"
-            if git diff --quiet -- install.sh uninstall.sh agent.sh; then
-              echo "No changes. Repo is already in sync with the live server."
-            else
-              git add install.sh uninstall.sh agent.sh
-              git commit -m "Sync agent scripts from live server"
-              git push
-              echo "Pushed updated scripts to the repo."
-            fi
+      - name: Commit and push if anything changed
+        run: |
+          set -euo pipefail
+          git config user.name "boxwatch-sync[bot]"
+          git config user.email "watcher@boxwatch.app"
+          if git diff --quiet -- install.sh uninstall.sh agent.sh; then
+            echo "No changes. Repo is already in sync with the live server."
+          else
+            git add install.sh uninstall.sh agent.sh
+            git commit -m "Sync agent scripts from live server"
+            git push
+            echo "Pushed updated scripts to the repo."
+          fi
