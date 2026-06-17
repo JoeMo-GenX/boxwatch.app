@@ -86,8 +86,9 @@ If you find a security issue, please email watcher@boxwatch.app rather than open
 | --- | --- |
 | `install.sh` | Downloads, verifies, and installs the agent, and sets up the cron job. |
 | `uninstall.sh` | Removes the agent, config, and cron job. |
+| `agent.sh` | The metrics collector that runs every minute via cron. This is the exact file the installer downloads and checksum-verifies. |
 
-> Note: `agent.sh`, the script that actually collects and pushes metrics, is currently served from `https://boxwatch.app/agent.sh` and verified by checksum at install time. Adding it to this repository is on the roadmap so the full agent can be audited here directly.
+> Note: `agent.sh` is also served from `https://boxwatch.app/agent.sh`, which is what `install.sh` downloads and verifies against `EXPECTED_SHA256`. The copy in this repository is kept in sync with the live one automatically, so you can audit here exactly what runs on your server.
 
 ## License
 
